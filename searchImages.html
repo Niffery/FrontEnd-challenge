@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search images</title>
+    <style>
+      div.gallery {
+        margin: 5px;
+        border: 1px solid #ccc;
+        float: left;
+        width: 100%;
+      }
+
+      div.gallery:hover {
+        border: 1px solid #777;
+      }
+
+      div.gallery img {
+        width: 25%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <input id="searchWords" onchange="clickSearch()" type="text"/>
+    <input type="button" onclick="clickSearch()" value="search">
+    <div id="ShowImage" class = "gallery">
+    </div>
+    <script type="text/javascript">
+        function clickSearch() {
+          const searchWords = document.getElementById('searchWords').value;
+          var curImages;
+          if (searchWords.length == 0) {
+            return;
+          }
+          const url = "https://api.imgur.com/3/gallery/search/1";
+          const params = "q=" + searchWords;
+          var xmlhttp = new XMLHttpRequest();
+          var auth = "Client-ID b067d5cb828ec5a";
+          xmlhttp.open("GET", url + "?" + params, true);
+          xmlhttp.setRequestHeader('Authorization', auth);
+          xmlhttp.send();
+          const imageContainer = document.getElementById("ShowImage");
+          imageContainer.innerHTML = "";
+          xmlhttp.onreadystatechange = function(){
+              if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                  data = JSON.parse(xmlhttp.responseText);
+                  curImages = data['data'];
+                  let i = 0, j = 0, total = 0;
+                  while(i < curImages.length) {
+                    if("images" in curImages[i] && j < curImages[i]["images"].length) {
+                      const imageLink = curImages[i]["images"][j]['link'];
+                      if(!imageLink.endsWith("mp4")) {
+                        const anchor = document.createElement("a");
+                        const image = new Image();
+                        anchor.setAttribute("href", imageLink);
+                        image.setAttribute('src', curImages[i]["images"][j]['link']);
+                        anchor.appendChild(image);
+                        imageContainer.appendChild(anchor);
+                      }
+                      j++;
+                    } else {
+                      i++;
+                      j = 0;
+                    }
+                  }
+              }
+          }
+        }
+    </script>
+  </body>
+</html>
